@@ -273,9 +273,16 @@
     }
 
     /* ===== Video Player Area ===== */
+    .player-area {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      gap: 8px;
+      overflow: hidden;
+    }
+
     .player-wrapper {
       position: relative;
-      width: 100%;
       border-radius: var(--radius-lg);
       overflow: hidden;
       background: #000;
@@ -292,6 +299,53 @@
       height: 100%;
       display: block;
       object-fit: contain;
+    }
+
+    /* Presentation (secondary) video */
+    .presentation-wrapper {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: #000;
+      box-shadow: var(--shadow-lg);
+      flex: 1;
+      min-height: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .presentation-wrapper.visible {
+      display: flex;
+    }
+
+    .presentation-wrapper video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .pres-label {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 100px;
+      z-index: 2;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    html[dir="rtl"] .pres-label {
+      left: auto;
+      right: 8px;
     }
 
     .player-placeholder {
@@ -623,6 +677,33 @@
       margin-inline-start: 4px;
     }
 
+    /* Presentation Toggle */
+    .pres-toggle-btn {
+      padding: 5px 12px;
+      border-radius: 100px;
+      border: 1px solid var(--border-subtle);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .pres-toggle-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .pres-toggle-btn.active {
+      background: var(--accent-gradient);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: var(--shadow-glow);
+    }
+
     /* ===== Status Bar ===== */
     .status-bar {
       display: flex;
@@ -722,7 +803,17 @@
 
     /* ===== Fullscreen styles ===== */
     .player-wrapper:fullscreen,
-    .player-wrapper:-webkit-full-screen {
+    .player-wrapper:-webkit-full-screen,
+    .player-area:fullscreen,
+    .player-area:-webkit-full-screen {
+      border-radius: 0;
+      background: #000;
+    }
+
+    .player-area:fullscreen .player-wrapper,
+    .player-area:-webkit-full-screen .player-wrapper,
+    .player-area:fullscreen .presentation-wrapper,
+    .player-area:-webkit-full-screen .presentation-wrapper {
       border-radius: 0;
     }
 
@@ -732,11 +823,11 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .file-inputs, .player-wrapper, .controls-panel, .status-bar, .keyboard-hints {
+    .file-inputs, .player-area, .controls-panel, .status-bar, .keyboard-hints {
       animation: fadeIn 0.5s ease-out backwards;
     }
 
-    .player-wrapper { animation-delay: 0.05s; }
+    .player-area { animation-delay: 0.05s; }
     .controls-panel { animation-delay: 0.1s; }
     .status-bar { animation-delay: 0.15s; }
     .keyboard-hints { animation-delay: 0.2s; }
@@ -828,24 +919,29 @@
         <span class="file-name" id="videoFileName"></span>
       </div>
       <div class="file-drop" id="audioDrop">
-        <input type="file" id="audioInput" accept="audio/*,video/*" aria-label="Select audio file" />
-        <div class="file-icon">🎧</div>
-        <span class="file-label" data-i18n="audioLabel">Audio File</span>
-        <span class="file-hint" data-i18n="audioHint">Click or drag &amp; drop your audio MP4</span>
+        <input type="file" id="audioInput" accept="audio/*,video/*" aria-label="Select audio/presentation file" />
+        <div class="file-icon">📽</div>
+        <span class="file-label" data-i18n="audioLabel">Audio / Presentation File</span>
+        <span class="file-hint" data-i18n="audioHint">Click or drag &amp; drop your audio or presentation MP4</span>
         <span class="file-name" id="audioFileName"></span>
       </div>
     </section>
 
-    <!-- Player -->
-    <div class="player-wrapper" id="playerWrapper">
-      <video id="videoEl" preload="auto" playsinline></video>
-      <audio id="audioEl" preload="auto"></audio>
-      <div class="player-placeholder" id="playerPlaceholder">
-        <div class="placeholder-icon">📺</div>
-        <div class="placeholder-text" data-i18n="placeholderText">Load both files to begin</div>
+    <!-- Player Area (holds both videos side-by-side when presentation is on) -->
+    <div class="player-area" id="playerArea">
+      <div class="player-wrapper" id="playerWrapper">
+        <video id="videoEl" preload="auto" playsinline></video>
+        <div class="player-placeholder" id="playerPlaceholder">
+          <div class="placeholder-icon">📺</div>
+          <div class="placeholder-text" data-i18n="placeholderText">Load both files to begin</div>
+        </div>
+        <div class="play-overlay" id="playOverlay">
+          <div class="play-overlay-btn" id="overlayBtn">▶</div>
+        </div>
       </div>
-      <div class="play-overlay" id="playOverlay">
-        <div class="play-overlay-btn" id="overlayBtn">▶</div>
+      <div class="presentation-wrapper" id="presentationWrapper">
+        <span class="pres-label" data-i18n="presLabel">Presentation</span>
+        <video id="audioEl" preload="auto" playsinline></video>
       </div>
     </div>
 
@@ -886,6 +982,7 @@
         </div>
 
         <div class="controls-right">
+          <button class="pres-toggle-btn" id="presToggleBtn" data-i18n="presShow" aria-label="Toggle presentation">Show Presentation</button>
           <div class="rate-group" id="rateGroup">
             <button class="rate-btn active" data-rate="1">1×</button>
             <button class="rate-btn" data-rate="1.25">1.25×</button>
@@ -911,6 +1008,7 @@
       <span class="kbd-hint"><kbd>↑</kbd><kbd>↓</kbd> <span data-i18n="kbdVolume">Volume</span></span>
       <span class="kbd-hint"><kbd>M</kbd> <span data-i18n="kbdMute">Mute</span></span>
       <span class="kbd-hint"><kbd>F</kbd> <span data-i18n="kbdFull">Fullscreen</span></span>
+      <span class="kbd-hint"><kbd>P</kbd> <span data-i18n="kbdPres">Presentation</span></span>
     </div>
   </main>
 
@@ -936,8 +1034,8 @@
         appTitle: 'Lecture Sync',
         videoLabel: 'Video File',
         videoHint: 'Click or drag & drop your video MP4',
-        audioLabel: 'Audio File',
-        audioHint: 'Click or drag & drop your audio MP4',
+        audioLabel: 'Audio / Presentation File',
+        audioHint: 'Click or drag & drop your audio or presentation MP4',
         placeholderText: 'Load both files to begin',
         statusReady: 'Ready',
         statusSynced: 'Synced & Playing',
@@ -953,13 +1051,17 @@
         kbdVolume: 'Volume',
         kbdMute: 'Mute',
         kbdFull: 'Fullscreen',
+        kbdPres: 'Presentation',
+        presShow: 'Show Presentation',
+        presHide: 'Hide Presentation',
+        presLabel: 'Presentation',
       },
       he: {
         appTitle: 'סנכרון הרצאות',
         videoLabel: 'קובץ וידאו',
         videoHint: 'לחצו או גררו את קובץ הווידאו לכאן',
-        audioLabel: 'קובץ שמע',
-        audioHint: 'לחצו או גררו את קובץ השמע לכאן',
+        audioLabel: 'קובץ שמע / מצגת',
+        audioHint: 'לחצו או גררו את קובץ השמע או המצגת לכאן',
         placeholderText: 'טענו את שני הקבצים כדי להתחיל',
         statusReady: 'מוכן',
         statusSynced: 'מסונכרן ומתנגן',
@@ -975,6 +1077,10 @@
         kbdVolume: 'עוצמת שמע',
         kbdMute: 'השתקה',
         kbdFull: 'מסך מלא',
+        kbdPres: 'מצגת',
+        presShow: 'הצג מצגת',
+        presHide: 'הסתר מצגת',
+        presLabel: 'מצגת',
       },
     };
 
@@ -1034,6 +1140,9 @@
     const syncDot = document.getElementById('syncDot');
     const statusText = document.getElementById('statusText');
     const playerWrapper = document.getElementById('playerWrapper');
+    const playerArea = document.getElementById('playerArea');
+    const presentationWrapper = document.getElementById('presentationWrapper');
+    const presToggleBtn = document.getElementById('presToggleBtn');
     const toastEl = document.getElementById('toast');
 
     /* =======================================
@@ -1116,6 +1225,11 @@
       // Set initial rate
       videoEl.playbackRate = currentRate;
       audioEl.playbackRate = currentRate;
+
+      // Mute the secondary video element (audio comes from this element via volume controls)
+      // Actually we want audio FROM the secondary element, so keep it unmuted.
+      // But mute the primary video element's audio to avoid echo if it has an audio track.
+      videoEl.muted = true;
     }
 
     setupDropZone(videoDrop, videoInput, videoEl, true);
@@ -1290,7 +1404,6 @@
     volumeSlider.addEventListener('input', () => {
       const v = parseFloat(volumeSlider.value);
       audioEl.volume = v;
-      videoEl.volume = v; // in case video has audio too
       lastVolume = v > 0 ? v : lastVolume;
       updateMuteIcon();
       updateVolumeSlider();
@@ -1300,11 +1413,9 @@
       if (audioEl.volume > 0) {
         lastVolume = audioEl.volume;
         audioEl.volume = 0;
-        videoEl.volume = 0;
         volumeSlider.value = 0;
       } else {
         audioEl.volume = lastVolume;
-        videoEl.volume = lastVolume;
         volumeSlider.value = lastVolume;
       }
       updateMuteIcon();
@@ -1341,9 +1452,27 @@
       if (document.fullscreenElement) {
         document.exitFullscreen();
       } else {
-        playerWrapper.requestFullscreen?.() || playerWrapper.webkitRequestFullscreen?.();
+        playerArea.requestFullscreen?.() || playerArea.webkitRequestFullscreen?.();
       }
     });
+
+    /* =======================================
+       PRESENTATION MODE TOGGLE
+    ======================================= */
+    let presentationVisible = false;
+
+    presToggleBtn.addEventListener('click', () => {
+      presentationVisible = !presentationVisible;
+      presentationWrapper.classList.toggle('visible', presentationVisible);
+      presToggleBtn.classList.toggle('active', presentationVisible);
+      // Update button text based on state and current language
+      const key = presentationVisible ? 'presHide' : 'presShow';
+      presToggleBtn.textContent = i18n[currentLang][key];
+      presToggleBtn.setAttribute('data-i18n', key);
+    });
+
+    // Keyboard shortcut: P to toggle presentation
+    // (added in the keydown handler below)
 
     /* =======================================
        STRICT SYNCHRONIZATION
@@ -1438,6 +1567,9 @@
           break;
         case 'KeyF':
           fullscreenBtn.click();
+          break;
+        case 'KeyP':
+          presToggleBtn.click();
           break;
       }
     });
