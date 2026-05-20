@@ -58,12 +58,16 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
+    html, body {
+      height: 100vh;
+      overflow: hidden;
+    }
+
     html[dir="rtl"] {
       font-family: var(--font-he);
     }
 
     body {
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -76,7 +80,7 @@
     /* ===== Header ===== */
     .header {
       width: 100%;
-      padding: 16px 28px;
+      padding: 10px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -84,8 +88,7 @@
       background: rgba(10, 10, 15, 0.7);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      position: sticky;
-      top: 0;
+      flex-shrink: 0;
       z-index: 100;
     }
 
@@ -147,18 +150,21 @@
     .app-container {
       width: 100%;
       max-width: 1100px;
-      padding: 28px 24px 40px;
+      padding: 12px 24px 8px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 10px;
       flex: 1;
+      min-height: 0;
+      overflow: hidden;
     }
 
     /* ===== File Inputs ===== */
     .file-inputs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 12px;
+      flex-shrink: 0;
     }
 
     @media (max-width: 640px) {
@@ -170,12 +176,12 @@
     .file-drop {
       position: relative;
       border: 2px dashed var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 28px 20px;
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
       text-align: center;
       cursor: pointer;
       transition: var(--transition-smooth);
@@ -223,14 +229,14 @@
     }
 
     .file-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-md);
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
       background: var(--bg-card);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 16px;
       position: relative;
       z-index: 1;
       transition: var(--transition-smooth);
@@ -270,11 +276,12 @@
     .player-wrapper {
       position: relative;
       width: 100%;
-      border-radius: var(--radius-xl);
+      border-radius: var(--radius-lg);
       overflow: hidden;
       background: #000;
       box-shadow: var(--shadow-lg);
-      aspect-ratio: 16/9;
+      flex: 1;
+      min-height: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -359,14 +366,15 @@
     .controls-panel {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-xl);
-      padding: 20px 24px;
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 10px;
       transition: var(--transition-smooth);
       opacity: 0.5;
       pointer-events: none;
+      flex-shrink: 0;
     }
 
     .controls-panel.active {
@@ -534,11 +542,11 @@
       height: 4px;
       -webkit-appearance: none;
       appearance: none;
-      background: rgba(255, 255, 255, 0.1);
+      background: linear-gradient(to right, #6c5ce7 100%, rgba(255, 255, 255, 0.1) 100%);
       border-radius: 100px;
       outline: none;
       cursor: pointer;
-      transition: var(--transition-fast);
+      transition: background var(--transition-fast);
     }
 
     .volume-slider::-webkit-slider-thumb {
@@ -548,7 +556,12 @@
       border-radius: 50%;
       background: #fff;
       cursor: pointer;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 6px rgba(108, 92, 231, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .volume-slider::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 100px;
     }
 
     .volume-slider::-moz-range-thumb {
@@ -558,6 +571,19 @@
       background: #fff;
       cursor: pointer;
       border: none;
+      box-shadow: 0 0 6px rgba(108, 92, 231, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .volume-slider::-moz-range-progress {
+      background: #6c5ce7;
+      border-radius: 100px;
+      height: 4px;
+    }
+
+    .volume-slider::-moz-range-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 100px;
+      height: 4px;
     }
 
     /* Playback Rate */
@@ -603,9 +629,10 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 8px;
-      font-size: 12px;
+      padding: 4px;
+      font-size: 11px;
       color: var(--text-muted);
+      flex-shrink: 0;
     }
 
     .sync-dot {
@@ -637,8 +664,9 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 12px;
-      padding: 8px;
+      gap: 10px;
+      padding: 2px;
+      flex-shrink: 0;
     }
 
     .kbd-hint {
@@ -679,13 +707,13 @@
         width: 60px;
       }
       .header {
-        padding: 12px 16px;
+        padding: 8px 16px;
       }
       .app-container {
-        padding: 16px 12px 32px;
+        padding: 8px 12px 4px;
       }
       .controls-panel {
-        padding: 16px;
+        padding: 10px 14px;
       }
       .keyboard-hints {
         display: none;
@@ -741,8 +769,8 @@
     /* ===== Footer ===== */
     .footer {
       width: 100%;
-      padding: 24px;
-      margin-top: auto;
+      padding: 8px;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1254,12 +1282,18 @@
     ======================================= */
     let lastVolume = 1;
 
+    function updateVolumeSlider() {
+      const pct = parseFloat(volumeSlider.value) * 100;
+      volumeSlider.style.background = `linear-gradient(to right, #6c5ce7 ${pct}%, rgba(255, 255, 255, 0.1) ${pct}%)`;
+    }
+
     volumeSlider.addEventListener('input', () => {
       const v = parseFloat(volumeSlider.value);
       audioEl.volume = v;
       videoEl.volume = v; // in case video has audio too
       lastVolume = v > 0 ? v : lastVolume;
       updateMuteIcon();
+      updateVolumeSlider();
     });
 
     muteBtn.addEventListener('click', () => {
@@ -1274,6 +1308,7 @@
         volumeSlider.value = lastVolume;
       }
       updateMuteIcon();
+      updateVolumeSlider();
     });
 
     function updateMuteIcon() {
@@ -1282,6 +1317,9 @@
       else if (v < 0.5) muteBtn.textContent = '🔉';
       else muteBtn.textContent = '🔊';
     }
+
+    // Initialize volume slider fill on load
+    updateVolumeSlider();
 
     /* =======================================
        PLAYBACK RATE
