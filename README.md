@@ -51,14 +51,48 @@ Speed up your studying with native desktop hotkeys:
 
 ---
 
-## 🚀 How to Use
+## 🚀 Getting Started
 
-1.  **Download the application:** Save the `index.html` file to your computer.
-2.  **Open in Browser:** Double-click `index.html` to open it in Chrome, Safari, Firefox, Edge, or any modern web browser.
-3.  **Load Media:**
-    *   Click the **Video File** box (or drag & drop a video file) to load the silent presentation.
-    *   Click the **Audio File** box (or drag & drop an audio file) to load the soundtrack.
-4.  **Play:** Use the central play button or press `Space` to start watching!
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Zvimarmor/LectureSync.git
+cd LectureSync
+```
+
+### 2. Run Locally
+
+Since this is a single HTML file, you have two options:
+
+**Option A — Direct open (simplest):**
+
+Simply double-click `index.html` or open it in any modern browser (Chrome, Firefox, Safari, Edge).
+
+**Option B — Local HTTP server (recommended):**
+
+Running through a local server avoids potential browser restrictions on local file access.
+
+Using **Python** (built-in on macOS/Linux):
+```bash
+# Python 3
+python3 -m http.server 8000
+```
+
+Using **Node.js**:
+```bash
+npx -y serve .
+```
+
+Then open your browser and navigate to:
+```
+http://localhost:8000
+```
+
+### 3. Load & Play
+
+1.  Click the **Video File** box (or drag & drop) to load the silent video file.
+2.  Click the **Audio File** box (or drag & drop) to load the audio file.
+3.  Press the **Play** button or hit <kbd>Space</kbd> to start watching — both tracks play in perfect sync!
 
 ---
 
