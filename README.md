@@ -6,6 +6,31 @@ This is a local-first web application compiled into a single, highly-optimized, 
 
 ---
 
+<div dir="rtl" lang="he">
+
+## 🇮🇱 מדריך מהיר בעברית
+
+אפליקציה זו נועדה לנגן שני קבצים (וידאו ושמע/מצגת) בסנכרון מושלם, כדי להקל על צפייה בהרצאות שהוקלטו בשני קבצים נפרדים. האפליקציה רצה כולה בדפדפן המקומי שלכם ואינה מעלה נתונים לשום שרת.
+
+### איך משתמשים?
+
+1. **הורדת Git (אם אין לכם):**
+   אם Git לא מותקן אצלכם במחשב, הורידו והתקינו אותו מהאתר הרשמי: [git-scm.com/downloads](https://git-scm.com/downloads).
+2. **העתקת הפרויקט למחשב (Clone):**
+   פתחו את שורת הפקודה (Terminal או CMD) והריצו:
+   ```bash
+   git clone https://github.com/Zvimarmor/LectureSync.git
+   cd LectureSync
+   ```
+3. **הפעלת האפליקציה:**
+   פשוט לחצו פעמיים על הקובץ `index.html` כדי לפתוח אותו בדפדפן (או לחלופין, הפעילו שרת מקומי בתיקייה).
+4. **טעינת קבצים:**
+   גררו את קובץ הווידאו הראשי לתיבה הראשונה, ואת קובץ השמע או המצגת לתיבה השנייה, ולחצו על מקש הרווח או כפתור הנגן כדי להתחיל. (ניתן לבחור מאיזה קובץ יושמע הסאונד באמצעות כפתור ייעודי בממשק).
+
+</div>
+
+---
+
 ## 📖 The Problem & Solution
 
 ### The Problem
@@ -27,6 +52,8 @@ Manually aligning two separate media players and keeping them in sync while paus
     *   **Master Play/Pause:** Single play/pause button or Spacebar to control both files instantly.
     *   **Scrubbable Progress Slider:** Precise scrub control mapping the synchronized timeline of both streams.
     *   **Speed Controls:** Instantly speed up or slow down lectures (1×, 1.25×, 1.5×, 1.75×, 2×) in lockstep.
+    *   **Dual-Video Presentation Mode:** Seamlessly toggle a side-by-side view if your second file is a presentation video.
+    *   **Audio Source Toggle:** Manually switch the audio playback source between the Main Video and the Presentation Video with zero echo.
     *   **Buffered Track Display:** Visual indicator of video buffering status.
     *   **Skip Controls:** Dedicated quick skip buttons to jump backward or forward by 10 seconds.
 *   **Strict Sync Logic:** Dual synchronization engines:
@@ -48,6 +75,7 @@ Speed up your studying with native desktop hotkeys:
 | <kbd>↑</kbd> / <kbd>↓</kbd> | Increase / Decrease volume |
 | <kbd>M</kbd> | Mute / Unmute audio |
 | <kbd>F</kbd> | Enter / Exit Fullscreen |
+| <kbd>P</kbd> | Toggle Presentation Mode |
 
 ---
 
