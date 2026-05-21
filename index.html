@@ -677,8 +677,8 @@
       margin-inline-start: 4px;
     }
 
-    /* Presentation Toggle */
-    .pres-toggle-btn {
+    /* Toggle Buttons */
+    .toggle-pill-btn {
       padding: 5px 12px;
       border-radius: 100px;
       border: 1px solid var(--border-subtle);
@@ -692,12 +692,12 @@
       white-space: nowrap;
     }
 
-    .pres-toggle-btn:hover {
+    .toggle-pill-btn:hover {
       border-color: var(--border-hover);
       color: var(--text-primary);
     }
 
-    .pres-toggle-btn.active {
+    .toggle-pill-btn.active {
       background: var(--accent-gradient);
       border-color: transparent;
       color: #fff;
@@ -982,7 +982,8 @@
         </div>
 
         <div class="controls-right">
-          <button class="pres-toggle-btn" id="presToggleBtn" data-i18n="presShow" aria-label="Toggle presentation">Show Presentation</button>
+          <button class="toggle-pill-btn" id="audioToggleBtn" data-i18n="audioSrcPres" aria-label="Toggle audio source">Audio: Presentation</button>
+          <button class="toggle-pill-btn" id="presToggleBtn" data-i18n="presShow" aria-label="Toggle presentation">Show Presentation</button>
           <div class="rate-group" id="rateGroup">
             <button class="rate-btn active" data-rate="1">1×</button>
             <button class="rate-btn" data-rate="1.25">1.25×</button>
@@ -1055,6 +1056,8 @@
         presShow: 'Show Presentation',
         presHide: 'Hide Presentation',
         presLabel: 'Presentation',
+        audioSrcMain: 'Audio: Main Video',
+        audioSrcPres: 'Audio: Presentation',
       },
       he: {
         appTitle: 'סנכרון הרצאות',
@@ -1081,6 +1084,8 @@
         presShow: 'הצג מצגת',
         presHide: 'הסתר מצגת',
         presLabel: 'מצגת',
+        audioSrcMain: 'שמע: וידאו ראשי',
+        audioSrcPres: 'שמע: מצגת',
       },
     };
 
@@ -1143,6 +1148,7 @@
     const playerArea = document.getElementById('playerArea');
     const presentationWrapper = document.getElementById('presentationWrapper');
     const presToggleBtn = document.getElementById('presToggleBtn');
+    const audioToggleBtn = document.getElementById('audioToggleBtn');
     const toastEl = document.getElementById('toast');
 
     /* =======================================
@@ -1226,10 +1232,7 @@
       videoEl.playbackRate = currentRate;
       audioEl.playbackRate = currentRate;
 
-      // Mute the secondary video element (audio comes from this element via volume controls)
-      // Actually we want audio FROM the secondary element, so keep it unmuted.
-      // But mute the primary video element's audio to avoid echo if it has an audio track.
-      videoEl.muted = true;
+      updateAudioRouting();
     }
 
     setupDropZone(videoDrop, videoInput, videoEl, true);
@@ -1392,9 +1395,24 @@
     skipForwardBtn.addEventListener('click', () => seekTo(videoEl.currentTime + 10));
 
     /* =======================================
-       VOLUME
+       VOLUME & AUDIO ROUTING
     ======================================= */
     let lastVolume = 1;
+    let activeAudioSource = 'audioEl'; // 'audioEl' for presentation, 'videoEl' for main
+
+    function updateAudioRouting() {
+      const v = parseFloat(volumeSlider.value);
+      if (activeAudioSource === 'audioEl') {
+        videoEl.muted = true;
+        audioEl.muted = false;
+        audioEl.volume = v;
+      } else {
+        audioEl.muted = true;
+        videoEl.muted = false;
+        videoEl.volume = v;
+      }
+      updateMuteIcon();
+    }
 
     function updateVolumeSlider() {
       const pct = parseFloat(volumeSlider.value) * 100;
@@ -1403,19 +1421,24 @@
 
     volumeSlider.addEventListener('input', () => {
       const v = parseFloat(volumeSlider.value);
-      audioEl.volume = v;
+      if (activeAudioSource === 'audioEl') {
+        audioEl.volume = v;
+      } else {
+        videoEl.volume = v;
+      }
       lastVolume = v > 0 ? v : lastVolume;
       updateMuteIcon();
       updateVolumeSlider();
     });
 
     muteBtn.addEventListener('click', () => {
-      if (audioEl.volume > 0) {
-        lastVolume = audioEl.volume;
-        audioEl.volume = 0;
+      const activeEl = activeAudioSource === 'audioEl' ? audioEl : videoEl;
+      if (activeEl.volume > 0) {
+        lastVolume = activeEl.volume;
+        activeEl.volume = 0;
         volumeSlider.value = 0;
       } else {
-        audioEl.volume = lastVolume;
+        activeEl.volume = lastVolume;
         volumeSlider.value = lastVolume;
       }
       updateMuteIcon();
@@ -1423,7 +1446,8 @@
     });
 
     function updateMuteIcon() {
-      const v = audioEl.volume;
+      const activeEl = activeAudioSource === 'audioEl' ? audioEl : videoEl;
+      const v = activeEl.volume;
       if (v === 0) muteBtn.textContent = '🔇';
       else if (v < 0.5) muteBtn.textContent = '🔉';
       else muteBtn.textContent = '🔊';
@@ -1431,6 +1455,17 @@
 
     // Initialize volume slider fill on load
     updateVolumeSlider();
+
+    /* =======================================
+       AUDIO SOURCE TOGGLE
+    ======================================= */
+    audioToggleBtn.addEventListener('click', () => {
+      activeAudioSource = activeAudioSource === 'audioEl' ? 'videoEl' : 'audioEl';
+      const key = activeAudioSource === 'audioEl' ? 'audioSrcPres' : 'audioSrcMain';
+      audioToggleBtn.textContent = i18n[currentLang][key];
+      audioToggleBtn.setAttribute('data-i18n', key);
+      updateAudioRouting();
+    });
 
     /* =======================================
        PLAYBACK RATE
