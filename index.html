@@ -301,6 +301,26 @@
       object-fit: contain;
     }
 
+    /* Resizer Bar */
+    .resizer {
+      width: 6px;
+      cursor: col-resize;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 100px;
+      transition: background var(--transition-fast);
+      display: none;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .resizer.visible {
+      display: block;
+    }
+
+    .resizer:hover, .resizer.dragging {
+      background: var(--accent);
+    }
+
     /* Presentation (secondary) video */
     .presentation-wrapper {
       position: relative;
@@ -939,6 +959,7 @@
           <div class="play-overlay-btn" id="overlayBtn">▶</div>
         </div>
       </div>
+      <div class="resizer" id="resizer"></div>
       <div class="presentation-wrapper" id="presentationWrapper">
         <span class="pres-label" data-i18n="presLabel">Presentation</span>
         <video id="audioEl" preload="auto" playsinline></video>
@@ -1146,6 +1167,7 @@
     const statusText = document.getElementById('statusText');
     const playerWrapper = document.getElementById('playerWrapper');
     const playerArea = document.getElementById('playerArea');
+    const resizer = document.getElementById('resizer');
     const presentationWrapper = document.getElementById('presentationWrapper');
     const presToggleBtn = document.getElementById('presToggleBtn');
     const audioToggleBtn = document.getElementById('audioToggleBtn');
@@ -1499,7 +1521,13 @@
     presToggleBtn.addEventListener('click', () => {
       presentationVisible = !presentationVisible;
       presentationWrapper.classList.toggle('visible', presentationVisible);
+      resizer.classList.toggle('visible', presentationVisible);
       presToggleBtn.classList.toggle('active', presentationVisible);
+      
+      if (!presentationVisible) {
+        playerWrapper.style.flex = ''; // Reset sizing when hiding
+      }
+      
       // Update button text based on state and current language
       const key = presentationVisible ? 'presHide' : 'presShow';
       presToggleBtn.textContent = i18n[currentLang][key];
@@ -1508,6 +1536,51 @@
 
     // Keyboard shortcut: P to toggle presentation
     // (added in the keydown handler below)
+
+    /* =======================================
+       RESIZER LOGIC
+    ======================================= */
+    let isResizing = false;
+
+    function startResize(e) {
+      isResizing = true;
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      resizer.classList.add('dragging');
+    }
+
+    function doResize(e) {
+      if (!isResizing) return;
+      const areaRect = playerArea.getBoundingClientRect();
+      const isRtl = document.documentElement.dir === 'rtl';
+      let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      let offset = clientX - areaRect.left;
+      if (isRtl) offset = areaRect.width - offset;
+      
+      const minW = areaRect.width * 0.15; // 15% min width
+      const maxW = areaRect.width * 0.85; // 85% max width
+      offset = Math.max(minW, Math.min(offset, maxW));
+      
+      // Subtracting a few pixels for the resizer itself
+      playerWrapper.style.flex = `0 0 ${offset - 3}px`;
+    }
+
+    function stopResize() {
+      if (isResizing) {
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        resizer.classList.remove('dragging');
+      }
+    }
+
+    resizer.addEventListener('mousedown', startResize);
+    document.addEventListener('mousemove', doResize);
+    document.addEventListener('mouseup', stopResize);
+
+    resizer.addEventListener('touchstart', startResize, { passive: true });
+    document.addEventListener('touchmove', doResize, { passive: true });
+    document.addEventListener('touchend', stopResize);
 
     /* =======================================
        STRICT SYNCHRONIZATION
