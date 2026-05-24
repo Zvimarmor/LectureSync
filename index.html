@@ -1180,7 +1180,7 @@
     let audioLoaded = false;
     let isSeeking = false;
     let currentRate = 1;
-    let syncThreshold = 0.15; // seconds tolerance
+    let syncThreshold = 0.3; // seconds tolerance
     let toastTimeout = null;
 
     /* =======================================
@@ -1585,25 +1585,39 @@
     /* =======================================
        STRICT SYNCHRONIZATION
     ======================================= */
+    let isSyncCorrecting = false; // guard to ignore waiting events caused by sync corrections
+
     function syncTimes() {
       if (isSeeking) return;
       const diff = Math.abs(videoEl.currentTime - audioEl.currentTime);
       if (diff > syncThreshold) {
+        isSyncCorrecting = true;
         audioEl.currentTime = videoEl.currentTime;
+        // Clear the guard after the browser has had time to process the seek
+        setTimeout(() => { isSyncCorrecting = false; }, 300);
       }
     }
 
     // Buffering handling: if one element is waiting, pause the other
     let videoWaiting = false;
     let audioWaiting = false;
+    let bufferDebounceTimer = null;
 
     function checkBuffering() {
+      // Ignore waiting events that were triggered by our own sync corrections
+      if (isSyncCorrecting) return;
+
+      clearTimeout(bufferDebounceTimer);
+
       if (videoWaiting || audioWaiting) {
-        if (isPlaying) {
-          if (!videoWaiting && !videoEl.paused) videoEl.pause();
-          if (!audioWaiting && !audioEl.paused) audioEl.pause();
-          setStatus('statusBuffering', 'buffering');
-        }
+        // Debounce: only act if still buffering after 200ms to avoid micro-stutter
+        bufferDebounceTimer = setTimeout(() => {
+          if ((videoWaiting || audioWaiting) && isPlaying) {
+            if (!videoWaiting && !videoEl.paused) videoEl.pause();
+            if (!audioWaiting && !audioEl.paused) audioEl.pause();
+            setStatus('statusBuffering', 'buffering');
+          }
+        }, 200);
       } else if (isPlaying) {
         // Both ready — resume
         syncTimes();
@@ -1687,10 +1701,6 @@
     ======================================= */
     function animationLoop() {
       if (isPlaying && !isSeeking) {
-        const diff = Math.abs(videoEl.currentTime - audioEl.currentTime);
-        if (diff > syncThreshold) {
-          audioEl.currentTime = videoEl.currentTime;
-        }
         updateSeekUI();
       }
       requestAnimationFrame(animationLoop);
