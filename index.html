@@ -1180,7 +1180,7 @@
     let audioLoaded = false;
     let isSeeking = false;
     let currentRate = 1;
-    let syncThreshold = 0.3; // seconds tolerance
+    let syncThreshold = 0.5; // seconds tolerance — generous to avoid constant audio seeks
     let toastTimeout = null;
 
     /* =======================================
@@ -1585,16 +1585,16 @@
     /* =======================================
        STRICT SYNCHRONIZATION
     ======================================= */
-    let isSyncCorrecting = false; // guard to ignore waiting events caused by sync corrections
+    let syncCooldown = false; // prevents rapid-fire corrections
 
     function syncTimes() {
-      if (isSeeking) return;
+      if (isSeeking || syncCooldown) return;
       const diff = Math.abs(videoEl.currentTime - audioEl.currentTime);
       if (diff > syncThreshold) {
-        isSyncCorrecting = true;
+        syncCooldown = true;
         audioEl.currentTime = videoEl.currentTime;
-        // Clear the guard after the browser has had time to process the seek
-        setTimeout(() => { isSyncCorrecting = false; }, 300);
+        // Block further corrections for 500ms to let the seek settle
+        setTimeout(() => { syncCooldown = false; }, 500);
       }
     }
 
@@ -1604,23 +1604,23 @@
     let bufferDebounceTimer = null;
 
     function checkBuffering() {
-      // Ignore waiting events that were triggered by our own sync corrections
-      if (isSyncCorrecting) return;
+      // Ignore waiting events triggered by our own sync corrections
+      if (syncCooldown) return;
 
       clearTimeout(bufferDebounceTimer);
 
       if (videoWaiting || audioWaiting) {
-        // Debounce: only act if still buffering after 200ms to avoid micro-stutter
+        // Debounce: only act if still buffering after 250ms to avoid micro-stutter
         bufferDebounceTimer = setTimeout(() => {
           if ((videoWaiting || audioWaiting) && isPlaying) {
             if (!videoWaiting && !videoEl.paused) videoEl.pause();
             if (!audioWaiting && !audioEl.paused) audioEl.pause();
             setStatus('statusBuffering', 'buffering');
           }
-        }, 200);
+        }, 250);
       } else if (isPlaying) {
-        // Both ready — resume
-        syncTimes();
+        // Both ready — just resume, do NOT call syncTimes here
+        // (the next timeupdate will handle sync if needed)
         if (videoEl.paused) videoEl.play().catch(() => {});
         if (audioEl.paused) audioEl.play().catch(() => {});
         setStatus('statusSynced', 'synced');
